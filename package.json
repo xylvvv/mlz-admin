@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "dumi dev",
-    "dist:es": "tsc -d -m esnext --outDir dist/es --sourceMap false --inlineSources false",
+    "dist:es": "tsc -d -m es2015 --outDir dist/es --sourceMap false --inlineSources false",
     "dist:cjs": "tsc -d -m commonjs --outDir dist/lib --sourceMap false --inlineSources false",
     "dist": "rm -rf dist && npm run dist:cjs && npm run dist:es",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
