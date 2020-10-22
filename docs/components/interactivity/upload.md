@@ -13,3 +13,13 @@
 ### 基本使用
 
 <code src="./../../demo/upload/normal-usage.demo.tsx" />
+
+### 七牛云上传
+
+#### 1. 七牛 SDK 上传
+
+<code src="./../../demo/upload/qiniu.demo.tsx" />
+
+#### 2. 编程猫内部上传
+
+<code src="./../../demo/upload/cmao-uploader.demo.tsx" />
