@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, memo } from 'react';
 import { Upload as AntdUpload } from 'antd';
 import CDNClient from '@cmao/cdn-uploader';
-import { RcCustomRequestOptions } from 'antd/es/upload/interface';
+import { RcCustomRequestOptions } from 'antd/lib/upload/interface';
 import * as qiniu from 'qiniu-js';
 import { QnType, UploadType } from './index.type';
 
