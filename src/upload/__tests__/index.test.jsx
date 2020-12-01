@@ -1,8 +1,47 @@
-import React, { Component } from 'react';
-import { shallow, mount } from 'enzyme';
-// import { act } from 'react-dom/test-utils';
+import React from 'react';
+import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import testMount from '../../../tests/testMount';
-import Upload from '..';
+import Upload, { useUploader } from '..';
+
+const testUseUploader = (desc, props) => {
+  it(desc, (done) => {
+    const Test = () => {
+      const fn = useUploader(props);
+      const file = new File(['foo'], 'foo.png', {
+        type: 'image/png',
+      });
+      return (
+        <button
+          onClick={() => {
+            expect(() => {
+              fn({
+                file,
+                onSuccess: (res, f) => {
+                  expect(f).toEqual(expect.objectContaining(file));
+                  done();
+                },
+                onError: (err) => {
+                  expect(err).toBeInstanceOf(Error);
+                  done();
+                },
+                onProgress: (ev, f) => {
+                  expect(ev.percent).toBeLessThanOrEqual(100);
+                  expect(f).toEqual(expect.objectContaining(file));
+                },
+              });
+            }).not.toThrow();
+          }}>
+          test
+        </button>
+      );
+    };
+    const wrapper = mount(<Test />);
+    act(() => {
+      wrapper.find('button').simulate('click');
+    });
+  });
+};
 
 describe('📦  Upload', () => {
   testMount(Upload);
@@ -23,52 +62,28 @@ describe('Upload.Qn: upload by cmao', () => {
     const el = mount(
       <Upload.Qn {...props}>
         <button>test</button>
-      </Upload.Qn>);
+      </Upload.Qn>,
+    );
     expect(el.childAt(0).type()).toEqual(Upload);
     expect(el.find('button').text()).toEqual('test');
+    expect(el.props()).toEqual(expect.objectContaining(props));
     done();
   });
 
-  // it('upload successfully', (done) => {
-  //   let callTimes = 0;
-  //   const onChange = e => {
-  //     const fileList = Array.isArray(e) ? e : e.fileList;
-  //     const file = fileList[0];
-  //
-  //     callTimes += 1;
-  //
-  //     switch (callTimes) {
-  //       case 1:
-  //       case 2:
-  //         expect(file).toEqual(expect.objectContaining({ status: 'uploading', percent: 0 }));
-  //         break;
-  //
-  //       case 3:
-  //         expect(file).toEqual(expect.objectContaining({ status: 'uploading', percent: 100 }));
-  //         break;
-  //
-  //       case 4:
-  //         expect(file).toEqual(expect.objectContaining({ status: 'done', percent: 100 }));
-  //         break;
-  //
-  //       default:
-  //       // Do nothing
-  //     }
-  //
-  //     if (callTimes >= 4) {
-  //       done();
-  //     }
-  //   };
-  //   const el = mount(
-  //     <Upload.Qn {...props} onChange={onChange}>
-  //       <button>test</button>
-  //     </Upload.Qn>);
-  //   // act(() => {
-  //   //   el.find('input').simulate('change', {
-  //   //     target: {
-  //   //       files: [{ file: 'foo.png' }],
-  //   //     },
-  //   //   });
-  //   // });
-  // });
+  testUseUploader('upload by cmao', props);
+});
+
+describe('Upload.Qn: upload by qn', () => {
+  const props1 = {
+    mapResToParams: () => ({ token: 'token', key: 'key' }),
+  };
+  const props2 = {
+    fetchToken: () => ({ uptoken: '123' }),
+    mapResToParams: (file, res) => ({
+      token: res.uptoken,
+      key: file.name,
+    }),
+  };
+  testUseUploader('props contains only mapResToParams', props1);
+  testUseUploader('props contains both mapResToParams and fetchToken', props2);
 });

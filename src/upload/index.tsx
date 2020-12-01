@@ -3,12 +3,12 @@ import { Upload as AntdUpload } from 'antd';
 import CDNClient from '@cmao/cdn-uploader';
 import { RcCustomRequestOptions } from 'antd/lib/upload/interface';
 import * as qiniu from 'qiniu-js';
-import { QnType, UploadType } from './index.type';
+import { QnType, UploadType, QnProps } from './index.type';
 
-const QnUploader: QnType = memo((props) => {
-  const { children, clientOptions, uploadParams, uploaderType, putExtra, config, mapResToParams, fetchToken, ...rest } = props;
+export const useUploader = (props: QnProps) => {
+  const { uploadParams, mapResToParams, fetchToken, putExtra, config, clientOptions, uploaderType } = props;
   const client = useRef<CDNClient | null>(!!clientOptions && uploaderType === 'cmao' ? new CDNClient(clientOptions) : null).current;
-  const customRequest = useCallback<(options: RcCustomRequestOptions) => void>(async (options) => {
+  return useCallback<(options: RcCustomRequestOptions) => void>(async (options) => {
     const { file, onSuccess, onProgress, onError } = options;
     // 编程猫内部上传
     if (client) {
@@ -16,8 +16,8 @@ const QnUploader: QnType = memo((props) => {
         type: 'normal',
         filename: file.name,
         ...uploadParams,
-        onsuccess: (result) => onSuccess(result, file),
         onerror: onError,
+        onsuccess: (result) => onSuccess(result, file),
         onprogress: (ev: any) => onProgress(ev?.total, file),
       });
       uploader?.start();
@@ -28,12 +28,17 @@ const QnUploader: QnType = memo((props) => {
 
       const observable = qiniu.upload(file, key, token, putExtra, config);
       observable.subscribe({
-        next: (res) => onProgress(res?.total, file),
         error: onError,
+        next: (res) => onProgress(res?.total, file),
         complete: (res) => onSuccess(res, file),
       });
     }
   }, []);
+};
+
+const QnUploader: QnType = memo((props) => {
+  const { children, clientOptions, uploadParams, uploaderType, putExtra, config, mapResToParams, fetchToken, ...rest } = props;
+  const customRequest = useUploader(props);
 
   return (
     <AntdUpload {...rest} customRequest={customRequest}>
